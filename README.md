@@ -44,7 +44,7 @@ public class Usuario {
     public void mostrarInformacion() {
         System.out.println("Usuario: " + nombre + ", Peso Actual: " + peso + " kg");
     }
-}```
+} ```
 
 ---
 
