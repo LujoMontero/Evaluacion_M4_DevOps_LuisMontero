@@ -202,3 +202,12 @@ jobs:
 - Mayor confianza en la plataforma.
 - Reducción de errores en producción.
 - Cumplimiento de estándares de calidad y precisión en el sector salud.
+
+---
+
+## ✍️ Autor
+
+**Luis Montero**  
+*Ingeniero en Informática | DevOps Enthusiast*  
+📅 Julio 2025
+
