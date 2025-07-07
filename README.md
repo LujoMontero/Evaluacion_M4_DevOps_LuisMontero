@@ -44,7 +44,8 @@ public class Usuario {
     public void mostrarInformacion() {
         System.out.println("Usuario: " + nombre + ", Peso Actual: " + peso + " kg");
     }
-} ```
+}
+```
 
 ---
 
@@ -55,6 +56,7 @@ public class Usuario {
 ```java
 public void actualizarPeso(double nuevoPeso) {
     this.peso -= 1;
-}```
+}
+```
 
 ---
