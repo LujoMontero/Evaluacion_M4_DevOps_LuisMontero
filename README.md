@@ -1,185 +1,135 @@
-# 💡 HealthTrack - Evaluación Módulo 4: Automatización de Pruebas
+<div align="center">
 
-Proyecto desarrollado en Java como parte del Módulo 4 - Automatización de Pruebas.  
-La plataforma **HealthTrack** permite a los usuarios registrar y actualizar su peso corporal.
+# 🏃 HealthTrack — Automatización de Pruebas
+
+### Java · JUnit 5 · Selenium · JMeter · SonarQube · GitHub Actions
+
+![Java](https://img.shields.io/badge/Java_17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![JUnit](https://img.shields.io/badge/JUnit_5-25A162?style=for-the-badge&logo=junit5&logoColor=white)
+![Selenium](https://img.shields.io/badge/Selenium-43B02A?style=for-the-badge&logo=selenium&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
+![SonarQube](https://img.shields.io/badge/SonarQube-4E9BCD?style=for-the-badge&logo=sonarqube&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
+
+</div>
 
 ---
 
-## ⚠️ Problema Detectado
+## 📌 ¿Qué hace este proyecto?
 
-El método encargado de actualizar el peso contiene un error crítico:
+**HealthTrack** es una plataforma de seguimiento de salud donde los usuarios registran su peso corporal. Este repositorio implementa una **estrategia completa de automatización de pruebas** para detectar, corregir y prevenir un bug crítico en la lógica de actualización de peso, usando JUnit, Selenium y JMeter integrados en un pipeline CI/CD.
+
+---
+
+## 🐛 Bug detectado y corrección
+
+El método `actualizarPeso` contenía un error crítico que descontaba 1 kg fijo en lugar de asignar el nuevo valor:
 
 ```java
+// ❌ ANTES — Bug crítico
 public void actualizarPeso(double nuevoPeso) {
-    this.peso -= 1; // ❌ Error: siempre descuenta 1 kg
+    this.peso -= 1; // Siempre descuenta 1 kg
 }
-```
 
-### Impacto:
-
-- ❗ **Datos incorrectos**: el peso no se actualiza correctamente.
-- ❗ **Pérdida de confianza**: los usuarios no confían en los datos registrados.
-- ❗ **Riesgos legales**: una app de salud debe cumplir con estándares de precisión.
-
----
-
-## 🔧 Solución Aplicada
-
-Se corrigió el método `actualizarPeso`:
-
-```java
+// ✅ DESPUÉS — Corrección aplicada
 public void actualizarPeso(double nuevoPeso) {
-    this.peso = nuevoPeso; // ✅ Solución correcta
+    this.peso = nuevoPeso; // Asigna el valor correcto
 }
 ```
 
-Además, se diseñó una batería de pruebas automatizadas para evitar regresiones y asegurar la calidad del software.
+**Impacto del bug:** datos incorrectos en app de salud → pérdida de confianza del usuario + riesgo legal.
 
 ---
 
-## 🧪 Pruebas Automatizadas
+## 🧪 Estrategia de pruebas implementada
 
-Se aplicaron distintos tipos de pruebas:
+### 1. Pruebas unitarias — JUnit 5
 
-### 1. ✅ Pruebas Unitarias (JUnit)
-
-**Objetivo:** Validar la lógica del método `actualizarPeso`.
-
-📄 `src/test/java/com/healthtrack/UsuarioTest.java`
+Validan la lógica del método `actualizarPeso` de forma aislada:
 
 ```java
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
+@Test
+void testActualizarPeso() {
+    Usuario usuario = new Usuario("Pedro", 70.0);
+    usuario.actualizarPeso(72.5);
+    assertEquals(72.5, usuario.getPeso(), 0.001);
+}
 
-public class UsuarioTest {
-
-    @Test
-    public void testActualizarPeso() {
-        Usuario usuario = new Usuario("Pedro", 70.0);
-        usuario.actualizarPeso(72.5);
-        assertEquals(72.5, usuario.getPeso(), 0.001);
-    }
-
-    @Test
-    public void testPesoInicial() {
-        Usuario usuario = new Usuario("Ana", 65.0);
-        assertEquals(65.0, usuario.getPeso(), 0.001);
-    }
+@Test
+void testPesoInicial() {
+    Usuario usuario = new Usuario("Ana", 65.0);
+    assertEquals(65.0, usuario.getPeso(), 0.001);
 }
 ```
 
----
+### 2. Pruebas funcionales — Selenium
 
-### 2. ✅ Pruebas Funcionales (Selenium)
-
-**Objetivo:** Simular un flujo real de usuario: login, actualización y visualización del nuevo peso.
+Simulan el flujo completo de usuario: login → actualización → verificación visual:
 
 ```java
-import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.junit.jupiter.api.*;
-
-public class HealthTrackFunctionalTest {
-    private WebDriver driver;
-
-    @BeforeEach
-    public void setUp() {
-        System.setProperty("webdriver.chrome.driver", "/path/to/chromedriver");
-        driver = new ChromeDriver();
-    }
-
-    @Test
-    public void testActualizarPeso() {
-        driver.get("http://localhost:8080/login");
-        driver.findElement(By.id("username")).sendKeys("testuser");
-        driver.findElement(By.id("password")).sendKeys("1234");
-        driver.findElement(By.id("loginButton")).click();
-        driver.findElement(By.id("pesoInput")).clear();
-        driver.findElement(By.id("pesoInput")).sendKeys("75");
-        driver.findElement(By.id("btnActualizar")).click();
-        WebElement resultado = driver.findElement(By.id("pesoActual"));
-        Assertions.assertEquals("75 kg", resultado.getText());
-    }
-
-    @AfterEach
-    public void tearDown() {
-        driver.quit();
-    }
+@Test
+public void testActualizarPesoEnUI() {
+    driver.get("http://localhost:8080/login");
+    driver.findElement(By.id("username")).sendKeys("testuser");
+    driver.findElement(By.id("password")).sendKeys("1234");
+    driver.findElement(By.id("loginButton")).click();
+    driver.findElement(By.id("pesoInput")).clear();
+    driver.findElement(By.id("pesoInput")).sendKeys("75");
+    driver.findElement(By.id("btnActualizar")).click();
+    assertEquals("75 kg", driver.findElement(By.id("pesoActual")).getText());
 }
 ```
 
----
+### 3. Pruebas de rendimiento — JMeter
 
-### 3. ✅ Pruebas de Regresión
+Verifican el comportamiento de la API bajo carga simultánea:
 
-**Objetivo:** Garantizar que futuras modificaciones no afecten la funcionalidad corregida.
-
-- Etiquetas `@Tag("regression")` en pruebas clave.
-- Ejecución continua mediante CI.
-
----
-
-### 4. ✅ Pruebas de Rendimiento (JMeter)
-
-**Objetivo:** Medir el comportamiento de la app con múltiples usuarios.
-
-**Configuración:**
-- 50 usuarios simultáneos
-- Ramp-up: 10 segundos
-- 5 iteraciones
-- Endpoint: `POST /actualizarPeso`
-
-**Requisitos esperados:**
-
-- ⏱️ Latencia promedio < 500 ms  
-- 📈 Throughput mínimo: 20 req/s  
-- ❌ Error rate < 1%
-
-**Ejecutar en consola:**
+| Parámetro | Valor objetivo |
+|---|---|
+| Usuarios concurrentes | 50 |
+| Latencia promedio | < 500 ms |
+| Throughput mínimo | 20 req/s |
+| Tasa de error | < 1% |
 
 ```bash
+# Ejecutar pruebas de carga
 jmeter -n -t tests/actualizarPeso.jmx -l results/resultados.jtl -e -o results/html
 ```
 
+### 4. Pruebas de regresión
+
+Etiquetas `@Tag("regression")` en tests clave para ejecución selectiva en CI:
+
+```bash
+mvn test -Dgroups=regression
+```
+
 ---
 
-## 🚀 CI/CD con GitHub Actions
-
-**Archivo:** `.github/workflows/ci.yml`
+## 🔁 Pipeline CI/CD — GitHub Actions
 
 ```yaml
 name: HealthTrack CI Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
         with:
           java-version: '17'
-
-      - name: Run Unit Tests (JUnit)
+      - name: Pruebas unitarias
         run: mvn clean test
-
-      - name: Run Functional Tests (Selenium)
+      - name: Pruebas funcionales (Selenium)
         run: mvn verify -Pselenium-tests
-
-      - name: Run Performance Tests (JMeter)
-        run: |
-          jmeter -n -t tests/actualizarPeso.jmx -l results/resultados.jtl -e -o results/html
-
-      - name: SonarQube Scan
+      - name: Análisis SonarQube
         uses: sonarsource/sonarqube-scan-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -187,27 +137,29 @@ jobs:
 
 ---
 
-## 🧾 Conclusiones
+## 🚀 Ejecutar el proyecto
 
-### ✅ Problema resuelto:
-- Lógica corregida en el método `actualizarPeso`.
+```bash
+# Clonar el repositorio
+git clone https://github.com/LujoMontero/Evaluacion_M4_DevOps_LuisMontero.git
+cd Evaluacion_M4_DevOps_LuisMontero
 
-### ✅ Buenas prácticas aplicadas:
-- Pruebas unitarias y funcionales.
-- Pruebas de rendimiento.
-- Pipeline automatizado con GitHub Actions.
-- Reportes y métricas con SonarQube y JMeter.
+# Ejecutar pruebas unitarias
+mvn clean test
 
-### ✅ Beneficios obtenidos:
-- Mayor confianza en la plataforma.
-- Reducción de errores en producción.
-- Cumplimiento de estándares de calidad y precisión en el sector salud.
+# Ver reporte de pruebas
+open target/surefire-reports/index.html
+```
 
 ---
 
-## ✍️ Autor
+## 📄 Documentación completa
 
-**Luis Montero**  
-*Ingeniero en Informática | DevOps Enthusiast*  
-📅 Julio 2025
+Disponible en: [`Evaluacion_M4_DevOps_LuisMontero.pdf`](./Evaluacion_M4_DevOps_LuisMontero.pdf)
 
+---
+
+## 👨‍💻 Autor
+
+**Luis Montero** · Especialización DevOps · Julio 2025  
+[GitHub](https://github.com/LujoMontero) · [LinkedIn](https://www.linkedin.com/in/luis-montero-if/)
